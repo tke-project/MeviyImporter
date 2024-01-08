@@ -1,0 +1,68 @@
+﻿@page "/DBAccess"
+@using System.IO
+@using System.Text
+@using MeviyImporter.Data
+@using System.Windows
+
+
+<PageTitle>DB Access</PageTitle>
+
+<h1>DB Access</h1>
+
+<InputFile class="form-control" OnChange="@LoadFilesAsync" />
+
+@code {
+
+    private async Task LoadFilesAsync(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+
+        string str;
+        using (var ms = new MemoryStream())
+        {
+            using (var stream = file.OpenReadStream(1000000))
+            {
+                await stream.CopyToAsync(ms);
+
+                str = Encoding.UTF8.GetString(ms.ToArray());
+            }
+        }
+
+        string[] lines = str.Split("\r\n");
+
+        using (var db = new MeviyImporterDBContext())
+        {
+            List<Part> parts = new();
+            for (int i = 1; i < lines.Length; i++)
+            {
+                string[] datas = lines[i].Split(",");
+                try
+                {
+
+                    var part = new Part()
+                        {
+                            Name = datas[4],
+                            Model = datas[5],
+                            Material = datas[6],
+                            SurfaceProcessing = datas[7],
+                            HeatTreatment = datas[8],
+                            Price = int.Parse(datas[10]),
+                            Quantity = int.Parse(datas[9]),
+                        };
+                    parts.Add(part);
+                }
+                catch (Exception)
+                {
+
+                }
+            }
+
+            await db.Parts.AddRangeAsync(parts);
+            await db.SaveChangesAsync();
+        }
+
+        MessageBox.Show("meviyのcsvデータをDBに追加登録しました。");
+
+
+    }
+}

@@ -1,0 +1,25 @@
+﻿@inject IJSRuntime JSRuntime
+
+@page "/"
+@using MeviyImporter.Data
+
+
+<PageTitle>Home</PageTitle>
+
+
+<h1>Blazor入門用サンプルアプリ</h1>
+
+Welcome!!
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        await JSRuntime.InvokeVoidAsync("unloadSummernote");
+
+        using (var db = new MeviyImporterDBContext())
+        {
+
+        }
+    }
+}
